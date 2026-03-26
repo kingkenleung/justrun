@@ -1,88 +1,219 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-HK">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HTML 代碼下載器</title>
-    <!-- 載入 Tailwind CSS -->
+    <title>JustRun — 即用即走，無需部署</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body
-    class="bg-gray-50 flex items-center justify-center min-h-screen p-4 font-sans"
-  >
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-3xl">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">
-        HTML 代碼轉換及下載器
-      </h1>
-      <p class="text-gray-600 mb-6">
-        將你嘅 HTML 代碼貼喺下面，系統會自動幫你打包成
-        <code>myapp.html</code> 檔案下載。唔使再煩 Windows 隱藏副檔名嘅問題！
-      </p>
+  <body class="bg-white text-gray-900 font-sans antialiased">
 
-      <div class="mb-4">
-        <label
-          for="htmlInput"
-          class="block text-sm font-medium text-gray-700 mb-2"
-          >貼上 HTML 代碼：</label
-        >
-        <textarea
-          id="htmlInput"
-          rows="12"
-          class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-          placeholder="<!DOCTYPE html>&#10;<html>&#10;...&#10;</html>"
-        ></textarea>
+    <!-- Hero -->
+    <header class="border-b border-gray-100">
+      <div class="max-w-4xl mx-auto px-6 py-12 text-center">
+        <span class="inline-block text-xs font-semibold tracking-widest uppercase text-gray-400 mb-4">For Gemini / AI App Beginners</span>
+        <h1 class="text-4xl sm:text-5xl font-black tracking-tight mb-4">JustRun</h1>
+        <p class="text-lg text-gray-500 max-w-xl mx-auto leading-relaxed">
+          用 AI 生成了 HTML 程式碼，但不知道怎麼執行？<br class="hidden sm:block"/>
+          <span class="text-gray-400 text-sm">Got HTML from Gemini but have no idea how to run it?</span>
+        </p>
+        <p class="mt-3 text-base text-gray-600 max-w-2xl mx-auto">
+          JustRun 兩個工具幫你解決兩個最常見的痛點，不需要安裝任何軟件，不需要買伺服器。
+        </p>
+        <p class="text-sm text-gray-400 mt-1">
+          Two tools. Zero setup. No server needed.
+        </p>
+      </div>
+    </header>
+
+    <!-- Tool Cards -->
+    <main class="max-w-4xl mx-auto px-6 py-12">
+      <div class="grid sm:grid-cols-2 gap-6 mb-16">
+
+        <!-- Download Tool -->
+        <a href="download.html"
+           class="group block border border-gray-200 rounded-xl p-7 hover:border-gray-800 hover:shadow-lg transition-all duration-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="bg-gray-100 group-hover:bg-gray-900 transition-colors rounded-lg p-2.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-400 font-mono">工具 01 · Tool 01</span>
+          </div>
+          <h2 class="text-xl font-bold mb-1">HTML 代碼下載器</h2>
+          <p class="text-sm text-gray-400 mb-3">HTML Code Downloader</p>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            貼上程式碼，直接下載成 <code class="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono">myapp.html</code> 檔案。解決 Windows 隱藏副檔名的問題，令你可以直接雙擊執行。
+          </p>
+          <p class="text-gray-400 text-xs mt-2 leading-relaxed">
+            Paste your code and download it as a proper <code class="bg-gray-100 px-1 rounded font-mono">myapp.html</code> file — bypasses Windows hidden file extension issues.
+          </p>
+          <div class="mt-5 flex items-center gap-1 text-sm font-semibold text-gray-800 group-hover:gap-2 transition-all">
+            前往工具 <span>→</span>
+          </div>
+        </a>
+
+        <!-- Server/Share Tool -->
+        <a href="server.html"
+           class="group block border border-gray-200 rounded-xl p-7 hover:border-gray-800 hover:shadow-lg transition-all duration-200">
+          <div class="flex items-start justify-between mb-4">
+            <div class="bg-gray-100 group-hover:bg-gray-900 transition-colors rounded-lg p-2.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+            </div>
+            <span class="text-xs text-gray-400 font-mono">工具 02 · Tool 02</span>
+          </div>
+          <h2 class="text-xl font-bold mb-1">即時分享工具</h2>
+          <p class="text-sm text-gray-400 mb-3">Live App Sharing (P2P)</p>
+          <p class="text-gray-600 text-sm leading-relaxed">
+            貼上程式碼，即時生成分享連結和 QR Code。朋友掃碼即可在手機運行你的 App，無需任何伺服器或帳戶。
+          </p>
+          <p class="text-gray-400 text-xs mt-2 leading-relaxed">
+            Paste code, get a shareable link & QR Code instantly. Friends can run your app on mobile — no server, no account required. Powered by WebRTC P2P.
+          </p>
+          <div class="mt-5 flex items-center gap-1 text-sm font-semibold text-gray-800 group-hover:gap-2 transition-all">
+            前往工具 <span>→</span>
+          </div>
+        </a>
       </div>
 
-      <div class="flex justify-end">
-        <button
-          id="downloadBtn"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition-colors duration-200 flex items-center gap-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          下載 myapp.html
-        </button>
+      <!-- Divider -->
+      <div class="border-t border-gray-100 mb-14"></div>
+
+      <!-- How to Use Guide -->
+      <section class="mb-16">
+        <h2 class="text-2xl font-black mb-1">使用教學</h2>
+        <p class="text-sm text-gray-400 mb-10">How to Use — Step by Step</p>
+
+        <!-- Scenario 1 -->
+        <div class="mb-12">
+          <div class="flex items-center gap-3 mb-5">
+            <span class="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">情境 A · Case A</span>
+            <span class="text-gray-700 font-semibold">我想在自己電腦上執行 · Run on your own computer</span>
+          </div>
+          <ol class="space-y-4">
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">1</span>
+              <div>
+                <p class="font-medium text-gray-800">在 Gemini / ChatGPT 生成 HTML 程式碼</p>
+                <p class="text-sm text-gray-400">Ask Gemini or any AI to generate an HTML app for you. Copy the entire code block.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">2</span>
+              <div>
+                <p class="font-medium text-gray-800">前往「HTML 代碼下載器」，貼上程式碼</p>
+                <p class="text-sm text-gray-400">Go to the <strong>HTML Code Downloader</strong> tool and paste the code in the text box.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">3</span>
+              <div>
+                <p class="font-medium text-gray-800">點擊「下載」，取得 <code class="bg-gray-100 px-1 rounded font-mono text-xs">myapp.html</code> 檔案</p>
+                <p class="text-sm text-gray-400">Click the download button. A properly named <code class="bg-gray-100 px-1 rounded font-mono text-xs">myapp.html</code> file will be saved to your computer.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">4</span>
+              <div>
+                <p class="font-medium text-gray-800">雙擊檔案，即可在瀏覽器執行</p>
+                <p class="text-sm text-gray-400">Double-click the downloaded file to open it in your browser. Done!</p>
+              </div>
+            </li>
+          </ol>
+          <div class="mt-5 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-500">
+            <span class="font-semibold text-gray-700">為甚麼不直接儲存為 .html？</span>
+            Windows 預設隱藏副檔名，直接「另存為」容易儲存成 <code class="font-mono text-xs bg-white border border-gray-200 px-1 rounded">myapp.html.txt</code>，導致無法直接執行。此工具強制設定正確的 <code class="font-mono text-xs bg-white border border-gray-200 px-1 rounded">.html</code> 副檔名。
+            <br/><span class="text-gray-400 text-xs">Windows hides file extensions by default. Saving via "Save As" often creates <code class="font-mono bg-white border border-gray-200 px-0.5 rounded">myapp.html.txt</code> instead. This tool forces the correct extension.</span>
+          </div>
+        </div>
+
+        <!-- Scenario 2 -->
+        <div>
+          <div class="flex items-center gap-3 mb-5">
+            <span class="bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full">情境 B · Case B</span>
+            <span class="text-gray-700 font-semibold">我想即時分享給別人 · Share with others instantly</span>
+          </div>
+          <ol class="space-y-4">
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">1</span>
+              <div>
+                <p class="font-medium text-gray-800">在 Gemini / ChatGPT 生成 HTML 程式碼</p>
+                <p class="text-sm text-gray-400">Generate your HTML app with AI, copy the full code.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">2</span>
+              <div>
+                <p class="font-medium text-gray-800">前往「即時分享工具」，貼上程式碼並點擊「開始託管」</p>
+                <p class="text-sm text-gray-400">Go to the <strong>Live App Sharing</strong> tool, paste the code, and click "Start Hosting".</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">3</span>
+              <div>
+                <p class="font-medium text-gray-800">系統自動產生分享連結和 QR Code</p>
+                <p class="text-sm text-gray-400">A shareable URL and QR Code are generated automatically. No account or login needed.</p>
+              </div>
+            </li>
+            <li class="flex gap-4">
+              <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">4</span>
+              <div>
+                <p class="font-medium text-gray-800">將連結或 QR Code 分享給朋友，他們掃碼即用</p>
+                <p class="text-sm text-gray-400">Share the link or QR Code. Anyone can scan to run your app directly in their browser.</p>
+              </div>
+            </li>
+          </ol>
+          <div class="mt-5 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-500">
+            <span class="font-semibold text-gray-700">注意：</span>你的瀏覽器頁面必須保持開啟，朋友才能連線。關閉後連結即失效。這是點對點（P2P）技術，你的電腦就是伺服器。
+            <br/><span class="text-gray-400 text-xs">Your browser tab must stay open while others are connecting. The link expires when you close the tab. Your computer acts as the server via WebRTC P2P.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Divider -->
+      <div class="border-t border-gray-100 mb-14"></div>
+
+      <!-- FAQ -->
+      <section class="mb-16">
+        <h2 class="text-2xl font-black mb-1">常見問題</h2>
+        <p class="text-sm text-gray-400 mb-8">FAQ</p>
+        <div class="space-y-6">
+
+          <div>
+            <p class="font-semibold text-gray-800">我需要安裝任何東西嗎？<span class="ml-2 text-gray-400 font-normal text-sm">Do I need to install anything?</span></p>
+            <p class="text-sm text-gray-500 mt-1">不需要。所有工具都在瀏覽器中運行，無需安裝任何軟件。<br/><span class="text-gray-400">No. Everything runs in the browser. Nothing to install.</span></p>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-800">分享工具支援幾多人同時連線？<span class="ml-2 text-gray-400 font-normal text-sm">How many people can connect at once?</span></p>
+            <p class="text-sm text-gray-500 mt-1">理論上沒有上限，但由於所有連線都要經過你的電腦，太多人同時連線可能會較慢。適合課堂展示或小組分享。<br/><span class="text-gray-400">Technically unlimited, but performance may degrade with many simultaneous connections since your computer handles each one. Best for classroom demos or small group sharing.</span></p>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-800">為甚麼朋友連不上？<span class="ml-2 text-gray-400 font-normal text-sm">Why can't my friend connect?</span></p>
+            <p class="text-sm text-gray-500 mt-1">常見原因：① 你的主機頁面已關閉 ② 學校或公司網絡封鎖了 WebRTC。試試讓朋友使用手機行動網絡（4G/5G）連線。<br/><span class="text-gray-400">Common causes: ① Host tab was closed ② School/corporate network blocks WebRTC. Ask your friend to try with mobile data (4G/5G).</span></p>
+          </div>
+
+          <div>
+            <p class="font-semibold text-gray-800">我的程式碼會上傳到伺服器嗎？<span class="ml-2 text-gray-400 font-normal text-sm">Is my code uploaded to a server?</span></p>
+            <p class="text-sm text-gray-500 mt-1">不會。所有程式碼只存在你的瀏覽器記憶體中，直接透過 P2P 傳輸給對方，不經過任何第三方伺服器儲存。<br/><span class="text-gray-400">No. Your code lives only in your browser's memory and is sent directly peer-to-peer. It is never stored on any server.</span></p>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-100">
+      <div class="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <span class="text-sm font-bold tracking-tight text-gray-700">JustRun</span>
+        <span class="text-xs text-gray-400">為初學者而設 · Built for first-time AI app learners</span>
       </div>
-    </div>
+    </footer>
 
-    <script>
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        const htmlContent = document.getElementById("htmlInput").value.trim();
-
-        if (!htmlContent) {
-          alert("請先貼上 HTML 代碼！");
-          return;
-        }
-
-        // 建立 Blob 物件將純文字轉換為檔案格式
-        const blob = new Blob([htmlContent], {
-          type: "text/html;charset=utf-8",
-        });
-
-        // 建立暫時下載連結
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "myapp.html"; // 強制設定下載檔名，解決副檔名痛點
-
-        // 觸發點擊並自動清理記憶體
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-    </script>
   </body>
 </html>

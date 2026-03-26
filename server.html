@@ -3,56 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 網頁應用即時分享工具 V2</title>
+    <title>即時分享工具 — JustRun</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; }
         #client-frame { border: none; width: 100%; height: 100vh; display: none; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .spinner { border: 3px solid #e5e7eb; border-top: 3px solid #111827; border-radius: 50%; width: 36px; height: 36px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-white text-gray-900 font-sans antialiased">
 
     <!-- 用戶端 (Client) 載入畫面 -->
-    <div id="client-loading" class="hidden flex-col items-center justify-center h-screen bg-gray-50 px-4 text-center">
-        <div class="spinner mb-4" id="spinner"></div>
-        <h2 class="text-xl font-bold text-gray-700" id="status-title">初始化中...</h2>
-        <p class="text-gray-500 mt-2 font-mono text-sm" id="status-desc">正在準備連線環境</p>
-        <p id="client-error" class="text-red-500 mt-4 hidden font-bold"></p>
+    <div id="client-loading" class="hidden flex-col items-center justify-center h-screen bg-white px-4 text-center">
+        <div class="spinner mb-5" id="spinner"></div>
+        <h2 class="text-lg font-bold text-gray-800" id="status-title">初始化中...</h2>
+        <p class="text-gray-400 mt-2 font-mono text-xs" id="status-desc">正在準備連線環境</p>
+        <p id="client-error" class="text-red-500 mt-6 hidden text-sm max-w-xs whitespace-pre-line"></p>
     </div>
 
     <iframe id="client-frame" allow="camera; microphone; geolocation; fullscreen; display-capture"></iframe>
 
     <!-- 主機端 (Host) 介面 -->
-    <div id="host-ui" class="hidden container mx-auto px-4 py-8 max-w-4xl">
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-blue-500">
-            <h1 class="text-2xl font-bold mb-2">🚀 AI App 即時分享工具 (強化版)</h1>
-            <p class="text-gray-600 mb-4">將 LLM 生成的 HTML 程式碼貼在下方，立即產生分享連結與 QRCode。</p>
-            
-            <div class="mb-4">
-                <textarea id="html-input" class="w-full h-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="<!DOCTYPE html>&#10;<html>...</html>"></textarea>
-            </div>
-            <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition">▶️ 開始託管並產生分享連結</button>
-        </div>
+    <div id="host-ui" class="hidden">
 
-        <div id="share-section" class="hidden bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500">
-            <h2 class="text-xl font-bold mb-4 text-green-700">✅ 託管成功！請保持此網頁開啟</h2>
-            <div class="flex flex-col md:flex-row gap-8 items-center">
-                <div class="flex-1 w-full">
-                    <p class="text-gray-700 mb-2 font-bold">分享連結：</p>
-                    <div class="flex items-center gap-2 mb-4">
-                        <input type="text" id="share-link" readonly class="w-full p-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 outline-none">
-                        <button id="copy-btn" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold text-gray-700 transition">複製</button>
+        <!-- Nav -->
+        <nav class="border-b border-gray-100">
+            <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+                <a href="index.html" class="text-sm text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    返回主頁 · Back
+                </a>
+                <span class="text-sm font-bold tracking-tight text-gray-700">JustRun</span>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-6 py-12">
+
+            <!-- Header -->
+            <div class="mb-10">
+                <span class="text-xs font-semibold tracking-widest uppercase text-gray-400">工具 02 · Tool 02</span>
+                <h1 class="text-3xl font-black tracking-tight mt-2 mb-2">即時分享工具</h1>
+                <p class="text-gray-500">Live App Sharing — Powered by WebRTC P2P</p>
+            </div>
+
+            <!-- Tool -->
+            <div class="border border-gray-200 rounded-xl p-7 mb-6">
+                <label for="html-input" class="block text-sm font-semibold text-gray-700 mb-2">
+                    貼上 HTML 程式碼 · Paste your HTML code
+                </label>
+                <textarea id="html-input" class="w-full h-56 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 font-mono text-sm bg-gray-50 outline-none transition" placeholder="<!DOCTYPE html>&#10;<html>...</html>"></textarea>
+                <button id="start-btn" class="mt-4 w-full bg-gray-900 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg transition text-sm">
+                    開始託管並產生分享連結 · Start Hosting
+                </button>
+            </div>
+
+            <!-- Share Section -->
+            <div id="share-section" class="hidden border border-gray-200 rounded-xl p-7 mb-10">
+                <div class="flex items-center gap-2 mb-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <h2 class="text-base font-bold text-gray-800">託管成功！請保持此頁面開啟</h2>
+                    <span class="text-xs text-gray-400">· Keep this tab open</span>
+                </div>
+                <div class="flex flex-col md:flex-row gap-8 items-start">
+                    <div class="flex-1 w-full">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">分享連結 · Share Link</p>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="share-link" readonly class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 outline-none font-mono">
+                            <button id="copy-btn" class="flex-shrink-0 bg-gray-100 hover:bg-gray-200 px-4 py-2.5 rounded-lg text-sm font-semibold text-gray-700 transition">複製</button>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div id="qrcode" class="bg-white p-1 rounded"></div>
+                        <p class="text-xs text-gray-400 mt-2">掃碼即用 · Scan to open</p>
                     </div>
                 </div>
-                <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border">
-                    <div id="qrcode" class="bg-white p-2 rounded"></div>
-                </div>
             </div>
+
+            <!-- Divider -->
+            <div class="border-t border-gray-100 mb-10"></div>
+
+            <!-- Guidelines -->
+            <section class="mb-16">
+                <h2 class="text-xl font-black mb-1">使用指南</h2>
+                <p class="text-sm text-gray-400 mb-8">How to Use</p>
+
+                <div class="mb-8">
+                    <p class="text-sm font-semibold text-gray-700 mb-4">主機端（你）· Host (You)</p>
+                    <ol class="space-y-4">
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">1</span>
+                            <div>
+                                <p class="font-medium text-gray-800">用 AI 生成 HTML 程式碼，全選並複製</p>
+                                <p class="text-sm text-gray-400 mt-0.5">Ask Gemini / ChatGPT to generate an HTML app. Copy the full code.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">2</span>
+                            <div>
+                                <p class="font-medium text-gray-800">將程式碼貼入文字框，點擊「開始託管」</p>
+                                <p class="text-sm text-gray-400 mt-0.5">Paste into the text box above, then click "Start Hosting".</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">3</span>
+                            <div>
+                                <p class="font-medium text-gray-800">複製連結或讓朋友掃描 QR Code，保持此頁面開啟</p>
+                                <p class="text-sm text-gray-400 mt-0.5">Share the link or QR Code. Keep this tab open the entire time.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="mb-8">
+                    <p class="text-sm font-semibold text-gray-700 mb-4">用戶端（朋友）· Client (Your friends)</p>
+                    <ol class="space-y-4">
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">1</span>
+                            <div>
+                                <p class="font-medium text-gray-800">打開分享連結或掃描 QR Code</p>
+                                <p class="text-sm text-gray-400 mt-0.5">Open the shared link or scan the QR Code with any smartphone.</p>
+                            </div>
+                        </li>
+                        <li class="flex gap-4">
+                            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">2</span>
+                            <div>
+                                <p class="font-medium text-gray-800">等待連線完成，應用即自動載入</p>
+                                <p class="text-sm text-gray-400 mt-0.5">Wait a few seconds for the P2P connection. The app loads automatically.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-4">
+                    <p class="text-sm font-semibold text-gray-700 mb-2">注意事項 · Important Notes</p>
+                    <ul class="space-y-2 text-sm text-gray-500 list-disc list-inside">
+                        <li>主機頁面必須保持開啟。關閉後連結即失效。<span class="text-gray-400 text-xs">· Host tab must stay open; link expires when closed.</span></li>
+                        <li>連線超時？試用手機 4G/5G 網絡繞過學校防火牆。<span class="text-gray-400 text-xs">· Connection timeout? Try mobile data to bypass school firewall/NAT.</span></li>
+                        <li>程式碼不經任何伺服器儲存，直接 P2P 傳輸。<span class="text-gray-400 text-xs">· Code is sent peer-to-peer and never stored on any server.</span></li>
+                        <li>更新程式碼後再按「開始託管」，新連線用戶將看到最新版。<span class="text-gray-400 text-xs">· Update code and click the button again; new visitors will see the latest version.</span></li>
+                    </ul>
+                </div>
+            </section>
+
         </div>
+
+        <!-- Footer -->
+        <footer class="border-t border-gray-100">
+            <div class="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <span class="text-sm font-bold tracking-tight text-gray-700">JustRun</span>
+                <span class="text-xs text-gray-400">為初學者而設 · Built for first-time AI app learners</span>
+            </div>
+        </footer>
+
     </div>
 
     <script>
@@ -160,15 +269,14 @@
                 hostPeer.on('open', (id) => {
                     const shareUrl = window.location.origin + window.location.pathname + "?peer_id=" + id;
                     document.getElementById('share-link').value = shareUrl;
-                    
                     document.getElementById('share-section').classList.remove('hidden');
-                    startBtn.textContent = '🔄 更新程式碼 (QRCode 保持不變)';
+                    startBtn.textContent = '更新程式碼（QR Code 保持不變）· Update Code';
                     startBtn.disabled = false;
-                    startBtn.classList.replace('bg-blue-600', 'bg-green-600');
+                    startBtn.classList.replace('bg-gray-900', 'bg-gray-700');
 
                     document.getElementById('qrcode').innerHTML = ''; 
                     new QRCode(document.getElementById("qrcode"), {
-                        text: shareUrl, width: 160, height: 160, colorDark: "#1f2937", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.L
+                        text: shareUrl, width: 140, height: 140, colorDark: "#111827", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.L
                     });
                 });
 

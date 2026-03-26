@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML 代碼下載器 — JustRun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-white text-gray-900 font-sans antialiased">
+
+    <!-- Nav -->
+    <nav class="border-b border-gray-100">
+      <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="index.html" class="text-sm text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1.5">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          返回主頁 · Back
+        </a>
+        <span class="text-sm font-bold tracking-tight text-gray-700">JustRun</span>
+      </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-6 py-12">
+
+      <!-- Header -->
+      <div class="mb-10">
+        <span class="text-xs font-semibold tracking-widest uppercase text-gray-400">工具 01 · Tool 01</span>
+        <h1 class="text-3xl font-black tracking-tight mt-2 mb-2">HTML 代碼下載器</h1>
+        <p class="text-gray-500">HTML Code Downloader</p>
+      </div>
+
+      <!-- Tool -->
+      <div class="border border-gray-200 rounded-xl p-7 mb-10">
+        <label for="htmlInput" class="block text-sm font-semibold text-gray-700 mb-2">
+          貼上 HTML 代碼 · Paste your HTML code
+        </label>
+        <textarea
+          id="htmlInput"
+          rows="14"
+          class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 font-mono text-sm bg-gray-50 outline-none transition"
+          placeholder="<!DOCTYPE html>&#10;<html>&#10;...&#10;</html>"
+        ></textarea>
+        <div class="flex justify-end mt-4">
+          <button
+            id="downloadBtn"
+            class="bg-gray-900 hover:bg-gray-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors duration-200 flex items-center gap-2 text-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            下載 myapp.html
+          </button>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="border-t border-gray-100 mb-10"></div>
+
+      <!-- Guidelines -->
+      <section class="mb-16">
+        <h2 class="text-xl font-black mb-1">使用指南</h2>
+        <p class="text-sm text-gray-400 mb-8">How to Use</p>
+
+        <ol class="space-y-5 mb-8">
+          <li class="flex gap-4">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">1</span>
+            <div>
+              <p class="font-medium text-gray-800">用 AI 生成 HTML 程式碼，全選並複製</p>
+              <p class="text-sm text-gray-400 mt-0.5">Ask Gemini / ChatGPT to generate an HTML app. Select all the code and copy it.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">2</span>
+            <div>
+              <p class="font-medium text-gray-800">將程式碼貼入上方的文字框</p>
+              <p class="text-sm text-gray-400 mt-0.5">Paste the code into the text box above.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">3</span>
+            <div>
+              <p class="font-medium text-gray-800">點擊「下載 myapp.html」</p>
+              <p class="text-sm text-gray-400 mt-0.5">Click the download button. The file <code class="bg-gray-100 px-1 rounded font-mono text-xs">myapp.html</code> will be saved to your Downloads folder.</p>
+            </div>
+          </li>
+          <li class="flex gap-4">
+            <span class="flex-shrink-0 w-7 h-7 rounded-full bg-gray-100 text-gray-600 text-sm font-bold flex items-center justify-center">4</span>
+            <div>
+              <p class="font-medium text-gray-800">在下載資料夾找到 <code class="bg-gray-100 px-1 rounded font-mono text-xs">myapp.html</code>，雙擊執行</p>
+              <p class="text-sm text-gray-400 mt-0.5">Locate <code class="bg-gray-100 px-1 rounded font-mono text-xs">myapp.html</code> in your Downloads folder and double-click to open in your browser.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-4 space-y-3">
+          <div>
+            <p class="text-sm font-semibold text-gray-700">為甚麼不直接「另存為」<code class="font-mono text-xs">.html</code>？</p>
+            <p class="text-sm text-gray-500 mt-1">
+              Windows 預設隱藏副檔名。在記事本選「另存為」時，很容易儲存成 <code class="font-mono text-xs bg-white border border-gray-200 px-1 rounded">myapp.html.txt</code>，雙擊只會打開記事本而非瀏覽器。此工具強制下載正確的 <code class="font-mono text-xs bg-white border border-gray-200 px-1 rounded">.html</code> 副檔名。
+            </p>
+            <p class="text-xs text-gray-400 mt-1">
+              Windows hides file extensions by default. "Save As" from Notepad often produces <code class="font-mono bg-white border border-gray-200 px-0.5 rounded">myapp.html.txt</code>, which opens in Notepad instead of a browser. This tool forces the correct <code class="font-mono bg-white border border-gray-200 px-0.5 rounded">.html</code> extension.
+            </p>
+          </div>
+          <div class="border-t border-gray-200 pt-3">
+            <p class="text-sm font-semibold text-gray-700">程式碼會上傳到伺服器嗎？</p>
+            <p class="text-sm text-gray-500 mt-1">不會。整個過程完全在你的瀏覽器本地進行，程式碼不會離開你的電腦。</p>
+            <p class="text-xs text-gray-400 mt-1">No. Everything happens locally in your browser. Your code never leaves your computer.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-100">
+      <div class="max-w-4xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <span class="text-sm font-bold tracking-tight text-gray-700">JustRun</span>
+        <span class="text-xs text-gray-400">為初學者而設 · Built for first-time AI app learners</span>
+      </div>
+    </footer>
+
+    <script>
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const htmlContent = document.getElementById("htmlInput").value.trim();
+        if (!htmlContent) {
+          alert("請先貼上 HTML 代碼！");
+          return;
+        }
+        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "myapp.html";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    </script>
+  </body>
+</html>
