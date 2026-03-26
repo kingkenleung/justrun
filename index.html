@@ -3,86 +3,263 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HTML 代碼下載器</title>
-    <!-- 載入 Tailwind CSS -->
+    <title>AI 應用即時分享器 | AI App Sharer</title>
+    <!-- Tailwind CSS for UI styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PeerJS for Peer-to-Peer connection (Browser as a Server) -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- QRCode.js for generating QR codes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      body {
+        font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
+      }
+      /* Make the iframe take up the whole screen for the student */
+      #app-frame {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
   </head>
-  <body
-    class="bg-gray-50 flex items-center justify-center min-h-screen p-4 font-sans"
-  >
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-3xl">
-      <h1 class="text-2xl font-bold text-gray-800 mb-2">
-        HTML 代碼轉換及下載器
+  <body class="bg-gray-50 text-gray-800">
+    <!-- 學生端：載入畫面 (Client View) -->
+    <div
+      id="client-view"
+      class="hidden flex flex-col items-center justify-center h-screen"
+    >
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"
+      ></div>
+      <h2 class="text-2xl font-bold text-gray-700">
+        正在從老師的主機載入應用程式...
+      </h2>
+      <p class="text-gray-500 mt-2">請稍候 (Loading from host...)</p>
+      <p id="client-error" class="text-red-500 mt-4 hidden font-bold"></p>
+    </div>
+
+    <!-- 教師端：設定畫面 (Host View) -->
+    <div id="host-view" class="max-w-4xl mx-auto p-6 mt-10">
+      <h1 class="text-3xl font-bold text-blue-700 mb-2">
+        AI 應用程式即時分享器
       </h1>
       <p class="text-gray-600 mb-6">
-        將你嘅 HTML 代碼貼喺下面，系統會自動幫你打包成
-        <code>myapp.html</code> 檔案下載。唔使再煩 Windows 隱藏副檔名嘅問題！
+        專為教育工作者設計，無須伺服器即可將 AI 生成的網頁應用程式分享給學生。
       </p>
 
-      <div class="mb-4">
-        <label
-          for="htmlInput"
-          class="block text-sm font-medium text-gray-700 mb-2"
-          >貼上 HTML 代碼：</label
-        >
-        <textarea
-          id="htmlInput"
-          rows="12"
-          class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
-          placeholder="<!DOCTYPE html>&#10;<html>&#10;...&#10;</html>"
-        ></textarea>
+      <div
+        class="bg-white p-6 rounded-lg shadow-md mb-6 border-l-4 border-blue-500"
+      >
+        <h2 class="text-xl font-bold mb-3">📝 使用指南</h2>
+        <ol class="list-decimal list-inside space-y-2 text-gray-700">
+          <li>
+            將 AI (例如 ChatGPT 或 Claude) 生成的
+            <strong>HTML 程式碼</strong> 貼到下方的文字方塊中。
+          </li>
+          <li>
+            點擊
+            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded"
+              >產生分享連結與 QR Code</span
+            >。
+          </li>
+          <li>
+            <strong class="text-red-600">請務必保持此網頁開啟！</strong
+            >您的瀏覽器將作為「主機」，負責將程式碼傳送給學生的設備。
+          </li>
+          <li>
+            讓學生掃描 QR Code
+            或點擊連結，即可在他們的設備上立即試用該應用程式。
+          </li>
+        </ol>
       </div>
 
-      <div class="flex justify-end">
-        <button
-          id="downloadBtn"
-          class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-sm transition-colors duration-200 flex items-center gap-2"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          下載 myapp.html
-        </button>
+      <textarea
+        id="html-input"
+        class="w-full h-64 p-4 border border-gray-300 rounded-md font-mono text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="在此貼上您的 HTML 程式碼..."
+      ></textarea>
+
+      <button
+        id="share-btn"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-200"
+      >
+        產生分享連結與 QR Code
+      </button>
+
+      <!-- 分享區塊 (Share Section) -->
+      <div
+        id="share-section"
+        class="hidden mt-8 bg-green-50 p-6 rounded-lg border border-green-200 text-center"
+      >
+        <h3 class="text-2xl font-bold text-green-800 mb-2">✅ 分享就緒！</h3>
+        <p class="text-sm text-gray-600 mb-4">
+          請保持此頁面開啟，讓學生掃描下方 QR Code：
+        </p>
+
+        <div
+          id="qrcode"
+          class="flex justify-center mb-4 bg-white p-4 inline-block rounded-lg shadow-sm mx-auto w-max"
+        ></div>
+
+        <div class="mt-4">
+          <p class="text-sm text-gray-500 mb-1">或複製此連結發送給學生：</p>
+          <a
+            id="share-link"
+            href="#"
+            target="_blank"
+            class="text-blue-600 font-mono break-all hover:underline"
+          ></a>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-green-200">
+          <p class="text-gray-700 font-bold">
+            目前連線學生人數:
+            <span id="connection-count" class="text-2xl text-blue-600">0</span>
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            您可以隨時修改上方 HTML 並再次點擊按鈕，即時更新學生的畫面。
+          </p>
+        </div>
       </div>
     </div>
 
     <script>
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        const htmlContent = document.getElementById("htmlInput").value.trim();
+      // Check if the URL has an ID query parameter (Student Mode)
+      const urlParams = new URLSearchParams(window.location.search);
+      const hostId = urlParams.get("id");
 
-        if (!htmlContent) {
-          alert("請先貼上 HTML 代碼！");
-          return;
-        }
+      if (hostId) {
+        // ==========================================
+        // 學生端邏輯 (Client/Student Mode)
+        // ==========================================
+        document.getElementById("host-view").classList.add("hidden");
+        document.getElementById("client-view").classList.remove("hidden");
 
-        // 建立 Blob 物件將純文字轉換為檔案格式
-        const blob = new Blob([htmlContent], {
-          type: "text/html;charset=utf-8",
+        const peer = new Peer();
+
+        peer.on("open", () => {
+          const conn = peer.connect(hostId, { reliable: true });
+
+          conn.on("open", () => {
+            console.log("已連線至老師主機！");
+          });
+
+          conn.on("data", (data) => {
+            if (data.type === "html") {
+              // Create a secure iframe to render the AI HTML code
+              document.body.innerHTML =
+                '<iframe id="app-frame" sandbox="allow-scripts allow-forms allow-same-origin allow-modals"></iframe>';
+              const iframe = document.getElementById("app-frame");
+              // Inject the HTML directly into the iframe
+              iframe.srcdoc = data.content;
+            }
+          });
+
+          conn.on("close", () => {
+            showClientError("主機已斷線。請請老師重新整理並提供新的 QR Code。");
+          });
         });
 
-        // 建立暫時下載連結
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "myapp.html"; // 強制設定下載檔名，解決副檔名痛點
+        peer.on("error", (err) => {
+          showClientError("無法連線至主機，請確認老師的網頁仍在開啟狀態。");
+          console.error(err);
+        });
 
-        // 觸發點擊並自動清理記憶體
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
+        function showClientError(msg) {
+          const errEl = document.getElementById("client-error");
+          errEl.innerText = msg;
+          errEl.classList.remove("hidden");
+        }
+      } else {
+        // ==========================================
+        // 教師端邏輯 (Host/Teacher Mode)
+        // ==========================================
+        let peer = null;
+        let activeConnections = [];
+
+        const htmlInput = document.getElementById("html-input");
+        const shareBtn = document.getElementById("share-btn");
+        const shareSection = document.getElementById("share-section");
+        const countEl = document.getElementById("connection-count");
+
+        shareBtn.addEventListener("click", () => {
+          const content = htmlInput.value.trim();
+          if (!content) {
+            alert("請先貼上 HTML 程式碼！");
+            return;
+          }
+
+          shareBtn.innerText = "正在建立主機...";
+          shareBtn.disabled = true;
+
+          // Initialize PeerJS if it hasn't been set up yet
+          if (!peer) {
+            peer = new Peer();
+
+            peer.on("open", (id) => {
+              shareBtn.innerText = "更新應用程式畫面給所有學生";
+              shareBtn.disabled = false;
+              shareSection.classList.remove("hidden");
+
+              // Construct the shareable link with the peer ID
+              const shareUrl = window.location.href.split("?")[0] + "?id=" + id;
+              document.getElementById("share-link").href = shareUrl;
+              document.getElementById("share-link").innerText = shareUrl;
+
+              // Generate QR Code
+              document.getElementById("qrcode").innerHTML = "";
+              new QRCode(document.getElementById("qrcode"), {
+                text: shareUrl,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M,
+              });
+            });
+
+            // Listen for incoming student connections
+            peer.on("connection", (conn) => {
+              activeConnections.push(conn);
+              updateCount();
+
+              conn.on("open", () => {
+                // Automatically send the current HTML when a student connects
+                conn.send({ type: "html", content: htmlInput.value });
+              });
+
+              conn.on("close", () => {
+                activeConnections = activeConnections.filter((c) => c !== conn);
+                updateCount();
+              });
+            });
+
+            peer.on("error", (err) => {
+              alert("建立主機時發生錯誤: " + err.message);
+              shareBtn.innerText = "產生分享連結與 QR Code";
+              shareBtn.disabled = false;
+            });
+          } else {
+            // If peer is already running, just push the new code to all connected students
+            shareBtn.innerText = "更新應用程式畫面給所有學生";
+            shareBtn.disabled = false;
+            activeConnections.forEach((conn) => {
+              if (conn.open) {
+                conn.send({ type: "html", content: content });
+              }
+            });
+            alert("已將最新的 HTML 同步至所有連線的學生畫面！");
+          }
+        });
+
+        function updateCount() {
+          // Update the UI showing how many students are actively connected
+          countEl.innerText = activeConnections.filter((c) => c.open).length;
+        }
+      }
     </script>
   </body>
 </html>
