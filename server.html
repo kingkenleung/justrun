@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 網頁應用即時分享工具 V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'PingFang HK', 'Microsoft JhengHei', sans-serif; }
+        #client-frame { border: none; width: 100%; height: 100vh; display: none; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- 用戶端 (Client) 載入畫面 -->
+    <div id="client-loading" class="hidden flex-col items-center justify-center h-screen bg-gray-50 px-4 text-center">
+        <div class="spinner mb-4" id="spinner"></div>
+        <h2 class="text-xl font-bold text-gray-700" id="status-title">初始化中...</h2>
+        <p class="text-gray-500 mt-2 font-mono text-sm" id="status-desc">正在準備連線環境</p>
+        <p id="client-error" class="text-red-500 mt-4 hidden font-bold"></p>
+    </div>
+
+    <iframe id="client-frame" allow="camera; microphone; geolocation; fullscreen; display-capture"></iframe>
+
+    <!-- 主機端 (Host) 介面 -->
+    <div id="host-ui" class="hidden container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-blue-500">
+            <h1 class="text-2xl font-bold mb-2">🚀 AI App 即時分享工具 (強化版)</h1>
+            <p class="text-gray-600 mb-4">將 LLM 生成的 HTML 程式碼貼在下方，立即產生分享連結與 QRCode。</p>
+            
+            <div class="mb-4">
+                <textarea id="html-input" class="w-full h-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="<!DOCTYPE html>&#10;<html>...</html>"></textarea>
+            </div>
+            <button id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition">▶️ 開始託管並產生分享連結</button>
+        </div>
+
+        <div id="share-section" class="hidden bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500">
+            <h2 class="text-xl font-bold mb-4 text-green-700">✅ 託管成功！請保持此網頁開啟</h2>
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                <div class="flex-1 w-full">
+                    <p class="text-gray-700 mb-2 font-bold">分享連結：</p>
+                    <div class="flex items-center gap-2 mb-4">
+                        <input type="text" id="share-link" readonly class="w-full p-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 outline-none">
+                        <button id="copy-btn" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg font-bold text-gray-700 transition">複製</button>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border">
+                    <div id="qrcode" class="bg-white p-2 rounded"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebRTC 設定：加入 STUN Server 幫助穿透學校 Firewall/NAT
+        const peerConfig = {
+            config: {
+                'iceServers': [
+                    { url: 'stun:stun.l.google.com:19302' },
+                    { url: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        };
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const hostPeerId = urlParams.get('peer_id');
+
+        if (hostPeerId) {
+            // ==========================================
+            // Client 邏輯
+            // ==========================================
+            const loadingUI = document.getElementById('client-loading');
+            const titleUI = document.getElementById('status-title');
+            const descUI = document.getElementById('status-desc');
+            const errorUI = document.getElementById('client-error');
+            const spinner = document.getElementById('spinner');
+            
+            loadingUI.classList.remove('hidden');
+            loadingUI.classList.add('flex');
+
+            titleUI.innerText = "1/3 正在連接派發伺服器...";
+            const peer = new Peer(peerConfig);
+
+            peer.on('open', (id) => {
+                titleUI.innerText = "2/3 正在尋找老師的主機...";
+                descUI.innerText = "建立點對點資料通道中 (P2P Handshake)";
+                
+                // 拿掉 { reliable: true }，避免 SCTP 封包阻塞導致卡死
+                const conn = peer.connect(hostPeerId);
+
+                // 設定超時警告 (10秒)
+                const timeoutAlert = setTimeout(() => {
+                    if(loadingUI.classList.contains('flex')) {
+                        errorUI.innerText = "⚠️ 尋找主機超時！請確認：\n1. 老師的主機網頁是否仍在開啟狀態？\n2. 學校網絡是否封鎖了 WebRTC？ (可嘗試用手機 4G 網絡測試)";
+                        errorUI.classList.remove('hidden');
+                        spinner.style.borderTopColor = "#ef4444";
+                    }
+                }, 10000);
+
+                conn.on('open', () => {
+                    clearTimeout(timeoutAlert);
+                    titleUI.innerText = "3/3 已連線！正在下載 App 內容...";
+                    descUI.innerText = "Requesting HTML data...";
+                    conn.send('ready');
+                });
+
+                conn.on('data', (data) => {
+                    if (data.type === 'html_app') {
+                        loadingUI.classList.remove('flex');
+                        loadingUI.classList.add('hidden');
+                        
+                        const iframe = document.getElementById('client-frame');
+                        iframe.style.display = 'block';
+                        
+                        // 將 HTML 寫入 iframe
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        iframeDoc.open();
+                        iframeDoc.write(data.content);
+                        iframeDoc.close();
+                    }
+                });
+
+                conn.on('error', (err) => {
+                    errorUI.innerText = `連線錯誤: ${err}`;
+                    errorUI.classList.remove('hidden');
+                });
+            });
+
+            peer.on('error', (err) => {
+                errorUI.innerText = `PeerJS 系統錯誤: ${err.type}`;
+                errorUI.classList.remove('hidden');
+            });
+
+        } else {
+            // ==========================================
+            // Host 邏輯
+            // ==========================================
+            document.getElementById('host-ui').classList.remove('hidden');
+            const startBtn = document.getElementById('start-btn');
+            let hostPeer = null;
+
+            startBtn.addEventListener('click', () => {
+                const htmlContent = document.getElementById('html-input').value.trim();
+                if (!htmlContent) return alert('請先貼上 HTML 程式碼！');
+
+                if (hostPeer) {
+                    alert('程式碼已在背景更新！新連線的學生將看到最新版。');
+                    return;
+                }
+
+                startBtn.textContent = '⏳ 正在建立主機連線...';
+                startBtn.disabled = true;
+
+                hostPeer = new Peer(peerConfig);
+
+                hostPeer.on('open', (id) => {
+                    const shareUrl = window.location.origin + window.location.pathname + "?peer_id=" + id;
+                    document.getElementById('share-link').value = shareUrl;
+                    
+                    document.getElementById('share-section').classList.remove('hidden');
+                    startBtn.textContent = '🔄 更新程式碼 (QRCode 保持不變)';
+                    startBtn.disabled = false;
+                    startBtn.classList.replace('bg-blue-600', 'bg-green-600');
+
+                    document.getElementById('qrcode').innerHTML = ''; 
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: shareUrl, width: 160, height: 160, colorDark: "#1f2937", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.L
+                    });
+                });
+
+                hostPeer.on('connection', (conn) => {
+                    // 當學生端連線成功或發送 ready 訊號時，把 HTML 掟過去
+                    conn.on('open', () => {
+                        conn.send({ type: 'html_app', content: document.getElementById('html-input').value });
+                    });
+                    conn.on('data', (data) => {
+                        if (data === 'ready') {
+                            conn.send({ type: 'html_app', content: document.getElementById('html-input').value });
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('copy-btn').addEventListener('click', (e) => {
+                navigator.clipboard.writeText(document.getElementById('share-link').value);
+                e.target.textContent = '已複製!';
+                setTimeout(() => { e.target.textContent = '複製'; }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
