@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PeerSpell - Realtime Classroom</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+      :root {
+        --primary: #4a90e2;
+        --secondary: #2ecc71;
+        --bg: #f0f2f5;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--bg);
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: var(--primary);
+        margin-top: 0;
+      }
+      .hidden {
+        display: none;
+      }
+
+      /* Buttons & Inputs */
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 6px;
+        transition: 0.2s;
+        margin: 5px;
+      }
+      .btn-teacher {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-student {
+        background: #9b59b6;
+        color: white;
+      }
+      .btn-submit {
+        background: var(--secondary);
+        color: white;
+        width: 100%;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      .btn-clear {
+        background: #e74c3c;
+        color: white;
+      }
+      input {
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        width: 200px;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      /* Teacher View */
+      #submissions {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+      }
+      .student-card {
+        border: 2px solid #eee;
+        border-radius: 8px;
+        padding: 10px;
+        background: #fff;
+        text-align: center;
+      }
+      .student-card img {
+        max-width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fafafa;
+      }
+      .room-badge {
+        font-size: 24px;
+        color: var(--primary);
+        font-weight: bold;
+        letter-spacing: 2px;
+        background: #eef5ff;
+        padding: 5px 15px;
+        border-radius: 4px;
+      }
+
+      /* Canvas Area */
+      #canvas-container {
+        margin: 20px 0;
+      }
+      canvas {
+        border: 3px solid #333;
+        border-radius: 8px;
+        background: white;
+        touch-action: none;
+        cursor: crosshair;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>PeerSpell 📝</h1>
+
+      <div id="setup-screen">
+        <p>Welcome! Please choose your role to begin.</p>
+        <button class="btn-teacher" onclick="startAs('teacher')">
+          I am the Teacher
+        </button>
+        <button class="btn-student" onclick="startAs('student')">
+          I am a Student
+        </button>
+      </div>
+
+      <div id="teacher-view" class="hidden">
+        <p>Give this code to your students:</p>
+        <span id="display-id" class="room-badge">Generating...</span>
+        <hr />
+        <h3>Live Student Submissions:</h3>
+        <div id="submissions"></div>
+      </div>
+
+      <div id="student-view" class="hidden">
+        <div id="student-join-form">
+          <input
+            type="text"
+            id="student-name"
+            placeholder="Your Name"
+            maxlength="15"
+          /><br />
+          <input
+            type="text"
+            id="join-id"
+            placeholder="4-Digit Code"
+            maxlength="4"
+          /><br />
+          <button class="btn-student" onclick="connectToTeacher()">
+            Connect to Class
+          </button>
+        </div>
+
+        <div id="drawing-zone" class="hidden">
+          <p>
+            Welcome, <strong id="active-name"></strong>! Write your answer
+            below:
+          </p>
+          <div id="canvas-container">
+            <canvas id="canvas" width="350" height="200"></canvas>
+          </div>
+          <button class="btn-clear" onclick="clearCanvas()">
+            Clear Canvas
+          </button>
+          <button class="btn-submit" onclick="submitWork()">
+            Submit to Teacher
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let peer = null;
+      let conn = null;
+      let studentName = "";
+
+      // Canvas Variables
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+      let isDrawing = false;
+
+      // --- Role Switching ---
+      function startAs(role) {
+        document.getElementById("setup-screen").classList.add("hidden");
+
+        if (role === "teacher") {
+          // Generate a simple 4-character ID
+          const shortId = Math.random()
+            .toString(36)
+            .substring(2, 6)
+            .toUpperCase();
+          peer = new Peer(shortId);
+
+          peer.on("open", (id) => {
+            document.getElementById("display-id").innerText = id;
+            document.getElementById("teacher-view").classList.remove("hidden");
+          });
+
+          peer.on("connection", (connection) => {
+            connection.on("data", (data) => {
+              if (data.type === "submission") {
+                addSubmissionToUI(data);
+              }
+            });
+          });
+
+          peer.on("error", (err) => {
+            if (err.type === "unavailable-id") {
+              alert("ID taken, please refresh and try again.");
+            }
+          });
+        } else {
+          document.getElementById("student-view").classList.remove("hidden");
+        }
+      }
+
+      // --- Student Logic ---
+      function connectToTeacher() {
+        studentName = document.getElementById("student-name").value.trim();
+        const targetId = document
+          .getElementById("join-id")
+          .value.toUpperCase()
+          .trim();
+
+        if (!studentName || !targetId) {
+          alert("Please enter both your name and the room code.");
+          return;
+        }
+
+        peer = new Peer(); // Random ID for student
+
+        peer.on("open", () => {
+          conn = peer.connect(targetId);
+
+          conn.on("open", () => {
+            document
+              .getElementById("student-join-form")
+              .classList.add("hidden");
+            document.getElementById("drawing-zone").classList.remove("hidden");
+            document.getElementById("active-name").innerText = studentName;
+            setupCanvas();
+          });
+
+          conn.on("error", () =>
+            alert("Could not connect to teacher. Check the code!"),
+          );
+        });
+      }
+
+      function submitWork() {
+        if (!conn || !conn.open) return alert("Connection lost!");
+
+        const dataURL = canvas.toDataURL();
+        conn.send({
+          type: "submission",
+          name: studentName,
+          image: dataURL,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        });
+
+        alert("Work submitted!");
+        clearCanvas();
+      }
+
+      // --- Teacher UI Logic ---
+      function addSubmissionToUI(data) {
+        const container = document.getElementById("submissions");
+        const card = document.createElement("div");
+        card.className = "student-card";
+        card.innerHTML = `
+            <strong>${data.name}</strong><br>
+            <small>${data.time}</small>
+            <img src="${data.image}" alt="Student Drawing">
+        `;
+        container.prepend(card); // Latest submission first
+      }
+
+      // --- Drawing Engine ---
+      function setupCanvas() {
+        ctx.lineWidth = 4;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "#333";
+
+        const getXY = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return { x: clientX - rect.left, y: clientY - rect.top };
+        };
+
+        const start = (e) => {
+          isDrawing = true;
+          draw(e);
+        };
+        const end = () => {
+          isDrawing = false;
+          ctx.beginPath();
+        };
+        const draw = (e) => {
+          if (!isDrawing) return;
+          e.preventDefault();
+          const pos = getXY(e);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(pos.x, pos.y);
+        };
+
+        canvas.onmousedown = start;
+        canvas.onmousemove = draw;
+        window.onmouseup = end;
+
+        canvas.ontouchstart = start;
+        canvas.ontouchmove = draw;
+        canvas.ontouchend = end;
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    </script>
+  </body>
+</html>

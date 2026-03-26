@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 網頁應用即時分享工具 (URL 壓縮版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 lz-string 進行高強度壓縮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
+      }
+      #client-frame {
+        border: none;
+        width: 100%;
+        height: 100vh;
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <!-- 用戶端 (Client) 顯示區塊 -->
+    <iframe
+      id="client-frame"
+      allow="camera; microphone; geolocation; fullscreen; display-capture"
+    ></iframe>
+
+    <div
+      id="error-msg"
+      class="hidden flex-col items-center justify-center h-screen bg-gray-50 px-4 text-center"
+    >
+      <h2 class="text-2xl font-bold text-red-600 mb-2">無法載入應用程式</h2>
+      <p class="text-gray-600">
+        網址可能已損毀或不完整，請向老師索取最新的分享連結。
+      </p>
+    </div>
+
+    <!-- 主機端 (Host) 介面 -->
+    <div id="host-ui" class="hidden container mx-auto px-4 py-8 max-w-4xl">
+      <div
+        class="bg-white rounded-xl shadow-lg p-6 mb-8 border-t-4 border-indigo-500"
+      >
+        <h1 class="text-2xl font-bold mb-2">🚀 AI App 分享工具 (離線壓縮版)</h1>
+        <p class="text-gray-600 mb-4">
+          無懼學校 Firewall！將 LLM 生成的 HTML
+          壓縮成一條專屬網址，學生打開即玩，老師**無需**保持網頁開啟。
+        </p>
+
+        <div class="mb-4">
+          <textarea
+            id="html-input"
+            class="w-full h-64 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
+            placeholder="<!DOCTYPE html>&#10;<html>...</html>"
+          ></textarea>
+        </div>
+        <button
+          id="start-btn"
+          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition"
+        >
+          ⚡ 壓縮並產生分享連結
+        </button>
+      </div>
+
+      <div
+        id="share-section"
+        class="hidden bg-white rounded-xl shadow-lg p-6 border-t-4 border-green-500"
+      >
+        <h2 class="text-xl font-bold mb-4 text-green-700">✅ 產生成功！</h2>
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+          <div class="flex-1 w-full">
+            <p class="text-gray-700 mb-2 font-bold">
+              分享連結 (可直接派發給學生)：
+            </p>
+            <div class="flex items-center gap-2 mb-4">
+              <textarea
+                id="share-link"
+                readonly
+                class="w-full h-24 p-2 bg-gray-100 border border-gray-300 rounded-lg text-sm text-gray-600 outline-none resize-none"
+              ></textarea>
+              <button
+                id="copy-btn"
+                class="bg-gray-200 hover:bg-gray-300 px-4 py-8 rounded-lg font-bold text-gray-700 transition h-full"
+              >
+                複製
+              </button>
+            </div>
+            <div
+              id="length-warning"
+              class="hidden bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800 mb-4"
+            >
+              <strong>⚠️ 注意：</strong> 這個 App 的程式碼比較長，導致 QRCode
+              非常密集。如果學生掃描困難，建議直接將上方的連結貼到 Google
+              Classroom 或以訊息發送。
+            </div>
+          </div>
+          <div
+            class="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border"
+          >
+            <p class="text-sm font-bold text-gray-600 mb-2">掃描即玩</p>
+            <!-- 把 QRCode 尺寸稍微調大一點以容納更多數據 -->
+            <div id="qrcode" class="bg-white p-2 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 檢查網址是否有 Hash (即包含被壓縮的 HTML)
+      const hashContent = window.location.hash.substring(1);
+
+      if (hashContent) {
+        // ==========================================
+        // Client 邏輯：解壓縮並渲染 HTML
+        // ==========================================
+        try {
+          // 解壓縮 URL 安全字串
+          const decompressedHtml =
+            LZString.decompressFromEncodedURIComponent(hashContent);
+
+          if (decompressedHtml) {
+            const iframe = document.getElementById("client-frame");
+            iframe.style.display = "block";
+
+            const iframeDoc =
+              iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(decompressedHtml);
+            iframeDoc.close();
+          } else {
+            throw new Error("Decompression failed");
+          }
+        } catch (e) {
+          console.error("解析失敗:", e);
+          document.getElementById("error-msg").classList.remove("hidden");
+          document.getElementById("error-msg").classList.add("flex");
+        }
+      } else {
+        // ==========================================
+        // Host 邏輯：接收 HTML，壓縮並產生連結
+        // ==========================================
+        document.getElementById("host-ui").classList.remove("hidden");
+        const startBtn = document.getElementById("start-btn");
+
+        startBtn.addEventListener("click", () => {
+          const htmlContent = document
+            .getElementById("html-input")
+            .value.trim();
+          if (!htmlContent) return alert("請先貼上 HTML 程式碼！");
+
+          // 核心：使用 LZString 將 HTML 壓縮成 URL 安全字串
+          const compressedHtml =
+            LZString.compressToEncodedURIComponent(htmlContent);
+
+          // 組合網址 (目前的網址 + # + 壓縮內容)
+          const baseUrl = window.location.origin + window.location.pathname;
+          const shareUrl = baseUrl + "#" + compressedHtml;
+
+          document.getElementById("share-link").value = shareUrl;
+          document.getElementById("share-section").classList.remove("hidden");
+
+          // 判斷網址長度，如果太長就顯示警告 (QRCode 太密集會很難掃描)
+          const lengthWarning = document.getElementById("length-warning");
+          if (shareUrl.length > 1500) {
+            lengthWarning.classList.remove("hidden");
+          } else {
+            lengthWarning.classList.add("hidden");
+          }
+
+          // 產生 QRCode (使用 CorrectLevel.L 盡量裝載更多數據)
+          document.getElementById("qrcode").innerHTML = "";
+          new QRCode(document.getElementById("qrcode"), {
+            text: shareUrl,
+            width: 200,
+            height: 200,
+            colorDark: "#1f2937",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L,
+          });
+        });
+
+        // 複製按鈕
+        document.getElementById("copy-btn").addEventListener("click", (e) => {
+          const linkUI = document.getElementById("share-link");
+          linkUI.select();
+          navigator.clipboard.writeText(linkUI.value);
+          e.target.textContent = "已複製!";
+          setTimeout(() => {
+            e.target.textContent = "複製";
+          }, 2000);
+        });
+      }
+    </script>
+  </body>
+</html>
